@@ -1,0 +1,15 @@
+[package]
+name = "webrpc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+color-eyre = "0.6.3"
+discord-sdk = "0.3.6"
+futures-util = "0.3.30"
+serde = { version = "1.0.201", features = ["derive"] }
+serde_json = "1.0.117"
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
+tokio-tungstenite = "0.21.0"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
