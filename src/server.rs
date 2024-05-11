@@ -46,7 +46,11 @@ enum Message {
         id: u16,
     },
 
-    UpdateAck {
+    Clear {
+        id: u16,
+    },
+
+    Ack {
         id: u16,
     },
 }
@@ -94,6 +98,20 @@ async fn accept_connection(stream: TcpStream, client: &client::Client) -> Result
                     Message::Update { service, id } => {
                         update_presence(client, service, &mut write, id).await;
                     }
+                    Message::Clear { id } => {
+                        let clear_result = client.discord.clear_activity().await;
+                        match clear_result {
+                            Ok(_) => tracing::info!("activity cleared"),
+                            Err(e) => tracing::error!("failed to clear activity: {}", e),
+                        }
+
+                        write
+                            .send(TungsteniteMessage::Text(
+                                serde_json::to_string(&Message::Ack { id }).unwrap(),
+                            ))
+                            .await
+                            .unwrap();
+                    }
                     _ => unreachable!(),
                 }
                 Ok(())
@@ -113,9 +131,17 @@ async fn update_presence(
     tracing::info!(service = ?service, "received service update");
     match service {
         Service::YouTubeMusic(info) => {
+            let mut assets = activity::Assets::default().large(
+                "youtubemusic".to_owned(),
+                Some(format!("{} - {}", info.artist, info.song)),
+            );
+            if info.paused {
+                assets = assets.small("paused".to_owned(), Some("Paused".to_owned()));
+            }
             let rp = activity::ActivityBuilder::default()
                 .details(info.song)
                 .state(info.artist)
+                .assets(assets)
                 .start_timestamp(SystemTime::now());
 
             tracing::info!(
@@ -127,7 +153,7 @@ async fn update_presence(
 
     write
         .send(TungsteniteMessage::Text(
-            serde_json::to_string(&Message::UpdateAck { id: msg_id }).unwrap(),
+            serde_json::to_string(&Message::Ack { id: msg_id }).unwrap(),
         ))
         .await
         .unwrap();

@@ -5,10 +5,8 @@ use discord_sdk::{
     AppId, Discord, DiscordApp, Subscriptions,
 };
 
-/// Application identifier for "Andy's Test App" used in the Discord SDK's
-/// examples.
 #[allow(clippy::unreadable_literal)]
-pub const APP_ID: AppId = 1238806174078472223;
+pub const APP_ID: AppId = 1238876651492868157;
 
 pub struct Client {
     pub discord: Discord,

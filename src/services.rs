@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct MusicServiceInfo {
     pub song: String,
     pub artist: String,
+    pub paused: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
