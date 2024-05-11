@@ -116,15 +116,15 @@ async fn accept_connection(stream: TcpStream, client: &client::Client) -> Result
                         tracing::info!(service = ?service, "received service update");
                         match service {
                             Service::YouTubeMusic(info) => {
-                                tracing::info!(info = ?info, "received YouTube Music update");
-                                client
-                                    .discord
-                                    .set_activity(activity::Activity::listening(&format!(
-                                        "{} by {}",
-                                        info.song, info.artist
-                                    )))
-                                    .await
-                                    .unwrap();
+                                let rp = activity::ActivityBuilder::default()
+                                    .details(info.song)
+                                    .state(info.artist)
+                                    .start_timestamp(SystemTime::now());
+
+                                tracing::info!(
+                                    "updated activity: {:?}",
+                                    client.discord.update_activity(rp).await
+                                );
                             }
                         }
                     }
