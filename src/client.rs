@@ -26,13 +26,13 @@ impl Client {
             .wrap_err("unable to create discord client")?;
 
         tracing::info!("waiting for handshake...");
-        user.0.changed().await.unwrap();
+        user.0.changed().await?;
 
         let user = match &*user.0.borrow() {
             UserState::Connected(user) => user.clone(),
             UserState::Disconnected(err) => {
                 tracing::error!(error = ?err, "failed to connect to Discord");
-                panic!() // FIXME: awful!
+                panic!("failed to connect to Discord"); // FIXME: better error handling
             }
         };
 
