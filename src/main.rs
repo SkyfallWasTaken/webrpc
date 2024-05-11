@@ -112,28 +112,32 @@ async fn accept_connection(stream: TcpStream, client: &client::Client) -> Result
 
             async {
                 match msg {
-                    Message::Update { service } => {
-                        tracing::info!(service = ?service, "received service update");
-                        match service {
-                            Service::YouTubeMusic(info) => {
-                                let rp = activity::ActivityBuilder::default()
-                                    .details(info.song)
-                                    .state(info.artist)
-                                    .start_timestamp(SystemTime::now());
-
-                                tracing::info!(
-                                    "updated activity: {:?}",
-                                    client.discord.update_activity(rp).await
-                                );
-                            }
-                        }
-                    }
+                    Message::Update { service } => update_presence(client, service).await?,
                     _ => unreachable!(),
                 }
                 Ok(())
             }
         })
         .await?;
+
+    Ok(())
+}
+
+async fn update_presence(client: &client::Client, service: Service) -> Result<()> {
+    tracing::info!(service = ?service, "received service update");
+    match service {
+        Service::YouTubeMusic(info) => {
+            let rp = activity::ActivityBuilder::default()
+                .details(info.song)
+                .state(info.artist)
+                .start_timestamp(SystemTime::now());
+
+            tracing::info!(
+                "updated activity: {:?}",
+                client.discord.update_activity(rp).await
+            );
+        }
+    }
 
     Ok(())
 }
